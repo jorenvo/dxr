@@ -40,6 +40,9 @@ class TreeAnalysis(object):
         self.names = {}
         self.ignore_paths = set()
 
+        self.base_class_to_odoo_model = {}
+        self.base_class_to_odoo_inherits = defaultdict(list)
+
         for path, encoding in paths:
             self._analyze_file(path, encoding)
         self._finish_analysis()
@@ -196,6 +199,21 @@ class AnalyzingNodeVisitor(ast.NodeVisitor, ClassFunctionVisitorMixin):
             if base_name:
                 bases.append((self.abs_module_name, base_name))
         self.tree_analysis.base_classes[class_path] = bases
+
+        # extract _name attributes, they are direct children of the class
+        for child in node.body:
+            if type(child).__name__ == 'Assign' and type(child.targets[0]).__name__ == 'Name':
+                target = child.targets[0].id
+                child = child.value
+
+                if target == '_name' and type(child).__name__ == 'Str':  # check type to avoid issues with _name = False
+                    self.tree_analysis.base_class_to_odoo_model[class_path] = child.s
+                elif target == '_inherit':
+                    if type(child).__name__ == 'List':
+                        for element in child.elts:
+                            self.tree_analysis.base_class_to_odoo_inherits[class_path].append(element.s)
+                    elif type(child).__name__ == 'Str':
+                        self.tree_analysis.base_class_to_odoo_inherits[class_path].append(child.s)
 
     def visit_ClassFunction(self, class_node, function_node):
         """Save any member functions we find on a class."""

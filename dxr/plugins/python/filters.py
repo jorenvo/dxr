@@ -54,3 +54,15 @@ class OverridesFilter(_QualifiedPyFilter):
 class OverriddenFilter(_QualifiedPyFilter):
     name = 'overridden'
     description = Markup('Methods which are overridden by the given one. Useful mostly with fully qualified methods, like <code>+overridden:foo.bar.some_method</code>.')
+
+
+class OdooModelFilter(_PyFilter):
+    name = 'odoo_model'
+    is_identifier = True
+    description = Markup('Odoo model definition: <code>odoo_model:res.partner</code>')
+
+
+class OdooInheritFilter(_PyFilter):
+    name = 'odoo_inherit'
+    is_identifier = True
+    description = Markup('Odoo models that inherit from the given model: <code>odoo_inherit:res.partner</code>')

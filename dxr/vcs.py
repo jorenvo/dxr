@@ -247,7 +247,7 @@ class Git(Vcs):
             # TODO: Why do we assume origin is upstream?
             if name == 'origin':
                 if repo.startswith("git@github.com:"):
-                    return "https://github.com/" + repo[len("git@github.com:"):]
+                    return "https://github.com/" + without_ending(".git", repo)[len("git@github.com:"):]
                 elif repo.startswith(("git://github.com/", "https://github.com/")):
                     repo = without_ending('.git', repo)
                     if repo.startswith("git:"):

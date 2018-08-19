@@ -34,6 +34,8 @@ mappings = {
             'py_callers': QUALIFIED_LINE_NEEDLE,
             'py_overrides': QUALIFIED_LINE_NEEDLE,
             'py_overridden': QUALIFIED_LINE_NEEDLE,
+            'py_odoo_model': QUALIFIED_LINE_NEEDLE,
+            'py_odoo_inherit': QUALIFIED_LINE_NEEDLE,
         },
     },
 }
@@ -120,6 +122,16 @@ class IndexingNodeVisitor(ast.NodeVisitor, ClassFunctionVisitorMixin):
             # Index the class hierarchy for classes for the derived: and
             # bases: filters.
             class_name = self.get_class_name(node)
+
+            odoo_model = self.tree_analysis.base_class_to_odoo_model.get(class_name)
+            if odoo_model:
+                print('yielding py_odoo_model needle for %s' % node.name)
+                self.yield_needle('py_odoo_model', odoo_model, start, end)
+
+            odoo_inherits = self.tree_analysis.base_class_to_odoo_inherits.get(class_name, [])
+            for odoo_inherit in odoo_inherits:
+                print('yielding py_odoo_inherit needle for %s on node %s' % (odoo_inherit, node.name))
+                self.yield_needle('py_odoo_inherit', odoo_inherit, start, end)
 
             bases = self.tree_analysis.get_base_classes(class_name,
                                                         set([class_name]))
